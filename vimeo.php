@@ -144,7 +144,7 @@ class phpVimeo
      * @param boolean $use_auth_header Use the OAuth Authorization header to pass the OAuth params.
      * @return string The response from the method call.
      */
-    private function _request($method, $call_params = array(), $request_method = 'GET', $url = self::API_REST_URL, $cache = true, $use_auth_header = true)
+    private function _request($method, $call_params = array(), $request_method = 'GET', $url = self::API_REST_URL, $cache = true, $time = '', $use_auth_header = true)
     {
         // Prepare oauth arguments
         $oauth_params = array(
@@ -216,6 +216,12 @@ class phpVimeo
         if ($use_auth_header) {
             $curl_opts[CURLOPT_HTTPHEADER] = array($this->_generateAuthHeader($oauth_params));
         }
+        
+        // If-Modified-Since header
+        if ($time) {
+            $curl_opts[CURLOPT_HEADER] = true;
+            $curl_opts[CURLOPT_TIMEVALUE] = strtotime($time);
+        }
 
         // Call the API
         $curl = curl_init($curl_url);
@@ -269,10 +275,10 @@ class phpVimeo
      * @param boolean $cache Whether or not to cache the response.
      * @return array The response from the API method
      */
-    public function call($method, $params = array(), $request_method = 'GET', $url = self::API_REST_URL, $cache = true)
+    public function call($method, $params = array(), $request_method = 'GET', $url = self::API_REST_URL, $cache = true, $time = '')
     {
         $method = (substr($method, 0, 6) != 'vimeo.') ? "vimeo.{$method}" : $method;
-        return $this->_request($method, $params, $request_method, $url, $cache);
+        return $this->_request($method, $params, $request_method, $url, $cache, $time);
     }
 
     /**
